@@ -209,8 +209,8 @@ void StartDefaultTask(void const * argument)
 
 void test(void *argument)
 {
-	//u8* img_bug = (u8*)CAMERA_BUF_ADDR;
-	//UART_Send_Image(img_bug, 0);
+	u8* img_bug = (u8*)CAMERA_BUF_ADDR;
+	UART_Send_Image(img_bug, 0);
 	while(1)
 	{
 		vTaskDelay(2000);
