@@ -1,0 +1,12 @@
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/port.c
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+aitargettracker\port.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+aitargettracker\port.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+aitargettracker\port.o: ../Core/Inc/FreeRTOSConfig.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+aitargettracker\port.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

@@ -1,0 +1,15 @@
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c
+aitargettracker\event_groups.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+aitargettracker\event_groups.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+aitargettracker\event_groups.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+aitargettracker\event_groups.o: ../Core/Inc/FreeRTOSConfig.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+aitargettracker\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h

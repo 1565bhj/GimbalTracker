@@ -1,0 +1,15 @@
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
+aitargettracker\queue.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+aitargettracker\queue.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\string.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+aitargettracker\queue.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+aitargettracker\queue.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+aitargettracker\queue.o: ../Core/Inc/FreeRTOSConfig.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+aitargettracker\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h

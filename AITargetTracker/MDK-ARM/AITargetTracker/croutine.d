@@ -1,0 +1,14 @@
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/croutine.c
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+aitargettracker\croutine.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+aitargettracker\croutine.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+aitargettracker\croutine.o: ../Core/Inc/FreeRTOSConfig.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/croutine.h
+aitargettracker\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
