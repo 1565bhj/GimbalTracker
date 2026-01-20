@@ -67,6 +67,7 @@ extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern SPI_HandleTypeDef hspi1;
 extern DMA_HandleTypeDef hdma_usart2_tx;
+extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
@@ -217,9 +218,7 @@ void DMA1_Stream3_IRQHandler(void)
   /* USER CODE END DMA1_Stream3_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart2_tx);
   /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
-	BaseType_t pxHigherPriorityTaskWoken = pdFALSE;
-	xSemaphoreGiveFromISR(xWaitDMASem, &pxHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(pxHigherPriorityTaskWoken);
+
   /* USER CODE END DMA1_Stream3_IRQn 1 */
 }
 
@@ -276,6 +275,20 @@ void SPI1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+	
+  /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
   * @brief This function handles DCMI global interrupt.
   */
 void DCMI_IRQHandler(void)
@@ -305,6 +318,21 @@ void MDMA_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart == &huart2)
+	{
+		//API will set it to pdTrue if there is a higher-priority Task ready
+		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		
+		//Always reset the softwareTimer
+		xSemaphoreGiveFromISR(xWaitDMASem, &xHigherPriorityTaskWoken);
+		
+		//Switch context
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+}
 
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {

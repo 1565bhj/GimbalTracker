@@ -49,7 +49,7 @@ void Gimbal_Init(PID_TypeDef* xPidx, PID_TypeDef* xPidy, Joystick_TypeDef* xJoy,
 	
     // 初始化云台状态 (假设初始在中间 90度)
     xGim->current_x_angle = 90.0f;
-    xGim->current_y_angle = 0.0f;
+    xGim->current_y_angle = 90.0f;
     xGim->servo_min_angle = 0.0f;
     xGim->servo_max_angle = 180.0f;
     

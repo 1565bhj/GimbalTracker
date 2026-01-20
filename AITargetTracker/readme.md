@@ -126,3 +126,9 @@ while (send_index < total_bytes)
 ​	// 错误：栈上分配大数组 → 栈溢出 // uint8_t send_buf[PACKET_SIZE];？
 
 ​	静态分配数组 or xTaskCreate(UART_Send_Task, "UART_Send", 4096, NULL, 3, NULL);
+
+
+
+
+
+在DMA1_Stream3_IRQHandler中断中释放信号量来标志传输完成会导致DMA busy

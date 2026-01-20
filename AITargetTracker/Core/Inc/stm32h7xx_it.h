@@ -58,6 +58,7 @@ void DMA1_Stream3_IRQHandler(void);
 void EXTI9_5_IRQHandler(void);
 void TIM1_UP_IRQHandler(void);
 void SPI1_IRQHandler(void);
+void USART2_IRQHandler(void);
 void DCMI_IRQHandler(void);
 void MDMA_IRQHandler(void);
 /* USER CODE BEGIN EFP */

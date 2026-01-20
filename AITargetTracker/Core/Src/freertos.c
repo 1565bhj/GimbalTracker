@@ -156,7 +156,6 @@ void MX_FREERTOS_Init(void) {
 	xWaitDMASem = xSemaphoreCreateBinary();
 	
 	xSemaphoreGive(xModeChangeSem);
-	xSemaphoreGive(xWaitDMASem);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -179,8 +178,8 @@ void MX_FREERTOS_Init(void) {
   xTaskCreate(test, "test", 128, NULL, osPriorityAboveNormal, NULL);
   //xTaskCreate(OV5640Task, "OV5640Task", 128, NULL, osPriorityAboveNormal, NULL);
   //xTaskCreate(Servotest, "servotest", 128, NULL, osPriorityAboveNormal, NULL);
-  //xTaskCreate(vModeChangeTask, "vModeChangeTask", 128, NULL, osPriorityAboveNormal, NULL);
-	//xTaskCreate(ControlTask, "ControlTask", 128, NULL, osPriorityAboveNormal, NULL);
+  xTaskCreate(vModeChangeTask, "vModeChangeTask", 128, NULL, osPriorityAboveNormal, NULL);
+	xTaskCreate(ControlTask, "ControlTask", 128, NULL, osPriorityAboveNormal, NULL);
 	
   /* USER CODE END RTOS_THREADS */
 
@@ -209,12 +208,11 @@ void StartDefaultTask(void const * argument)
 
 void test(void *argument)
 {
-	u8* img_bug = (u8*)CAMERA_BUF_ADDR;
-	UART_Send_Image(img_bug, 0);
+//	u8* img_bug = (u8*)CAMERA_BUF_ADDR;
+//	UART_Send_Image(img_bug, 0);
 	while(1)
 	{
 		vTaskDelay(2000);
-		printf("printfTest\r\n");
 	}
 }
 

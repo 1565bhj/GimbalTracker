@@ -72,17 +72,19 @@ void UART_Send_RGB(uint8_t *img_buf, uint8_t img_format)
     // 预留5字节（校验/扩展）
 		
 		printf("send frame header...\r\n");
-    HAL_UART_Transmit_DMA(&huart2, frame_header, 16);
+    if(HAL_UART_Transmit_DMA(&huart2, frame_header, 16) != HAL_OK)
+		{
+			printf("DMA传输失败");
+		}
 		xSemaphoreTake(xWaitDMASem, portMAX_DELAY);
 
-    // 第二步：分包发送像素数据
-		int i = 1;
+    // 第二步：分包发送像素数据'
+		int i = 0;
     while (send_index < total_bytes)
     {
         uint32_t remain_bytes = total_bytes - send_index;
         uint32_t send_bytes = (remain_bytes > PACKET_SIZE) ? PACKET_SIZE : remain_bytes;
 
-			printf("send_bytes:%d\r\n", send_bytes);
         // 从SDRAM读取数据到发送缓冲区
 //        for (uint32_t i = 0; i < send_bytes; i++)
 //        {
@@ -92,7 +94,11 @@ void UART_Send_RGB(uint8_t *img_buf, uint8_t img_format)
 
         // 串口发送当前包
 				printf("send the %d packet...\r\n", i++);
-        HAL_UART_Transmit_DMA(&huart2, send_buf, send_bytes);
+        
+				if(HAL_UART_Transmit_DMA(&huart2, send_buf, send_bytes) != HAL_OK)
+				{
+					printf("DMA传输失败");
+				}
 				xSemaphoreTake(xWaitDMASem, portMAX_DELAY);
 		
         send_index += send_bytes;
@@ -102,7 +108,11 @@ void UART_Send_RGB(uint8_t *img_buf, uint8_t img_format)
     // 第三步：发送帧尾（2字节）
     uint8_t frame_tail[2] = {(FRAME_TAIL >> 8) & 0xFF, FRAME_TAIL & 0xFF};
 		printf("send the frame tail...\r\n");
-    HAL_UART_Transmit_DMA(&huart2, frame_tail, 2);
+    
+		if(HAL_UART_Transmit_DMA(&huart2, frame_tail, 2) != HAL_OK)
+		{
+			printf("DMA传输失败");
+		}
 		xSemaphoreTake(xWaitDMASem, portMAX_DELAY);
 		printf("传输完成！");
 }
