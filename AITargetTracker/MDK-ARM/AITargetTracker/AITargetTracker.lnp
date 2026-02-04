@@ -8,6 +8,7 @@
 "aitargettracker\dma.o"
 "aitargettracker\dma2d.o"
 "aitargettracker\fmc.o"
+"aitargettracker\i2c.o"
 "aitargettracker\jpeg.o"
 "aitargettracker\mdma.o"
 "aitargettracker\spi.o"
@@ -72,6 +73,9 @@
 "aitargettracker\gimbal.o"
 "aitargettracker\joystick.o"
 "aitargettracker\transmit_image.o"
+"aitargettracker\foc.o"
+"aitargettracker\lowpassfilter.o"
+"aitargettracker\as5600.o"
 "aitargettracker\jpeg_utils.o"
 --library_type=microlib --strict --scatter "AITargetTracker\AITargetTracker.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

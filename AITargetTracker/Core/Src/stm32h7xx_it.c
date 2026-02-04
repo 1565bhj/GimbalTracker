@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include "cmsis_os.h"
 #include "sys.h"
+#include "AS5600.h"
+#include "FOC.h"
+#include "LowPassFilter.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,11 +66,18 @@ volatile uint8_t OV5640_FPS ;
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_dcmi;
 extern DCMI_HandleTypeDef hdcmi;
+extern DMA_HandleTypeDef hdma_i2c2_rx;
+extern I2C_HandleTypeDef hi2c2;
 extern MDMA_HandleTypeDef hmdma_jpeg_infifo_nf;
 extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_ne;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim1;
 
@@ -76,8 +87,10 @@ extern uint16_t pADC_Buf[2];
 extern SemaphoreHandle_t xWaitDMASem;
 extern SemaphoreHandle_t xUART1_DMA_Sem;
 extern SemaphoreHandle_t xPrintDoneSem;
+extern SemaphoreHandle_t xMotorSem;
 extern TimerHandle_t xDebounceTimer;
-
+extern char pUartRx_buf[128];
+extern QueueHandle_t xRxQueue;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -223,26 +236,59 @@ void DMA1_Stream3_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles DMA1 stream4 global interrupt.
+  */
+void DMA1_Stream4_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream4_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_rx);
+  /* USER CODE BEGIN DMA1_Stream4_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA1 stream5 global interrupt.
+  */
+void DMA1_Stream5_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream5_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+  /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream5_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line[9:5] interrupts.
   */
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-
+	if (__HAL_GPIO_EXTI_GET_IT(JOYSTICKBTN_Pin) != RESET)
+  {
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(JOYSTICKBTN_Pin);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
-	if(xDebounceTimer != NULL)
-	{
-		//API will set it to pdTrue if there is a higher-priority Task ready
-		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-		
-		//Always reset the softwareTimer
-		xTimerResetFromISR(xDebounceTimer, &xHigherPriorityTaskWoken);
-		
-		//Switch context
-		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-	}
+	
+	/* EXTI line interrupt detected */
+  
+		if(xDebounceTimer != NULL)
+		{		
+			//API will set it to pdTrue if there is a higher-priority Task ready
+			BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+			//Always reset the softwareTimer
+			xTimerResetFromISR(xDebounceTimer, &xHigherPriorityTaskWoken);
+			
+			//Switch context
+			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+		}
+  }
+	
   /* USER CODE END EXTI9_5_IRQn 1 */
 }
 
@@ -261,6 +307,34 @@ void TIM1_UP_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles I2C2 event interrupt.
+  */
+void I2C2_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C2_EV_IRQn 0 */
+
+  /* USER CODE END I2C2_EV_IRQn 0 */
+  HAL_I2C_EV_IRQHandler(&hi2c2);
+  /* USER CODE BEGIN I2C2_EV_IRQn 1 */
+
+  /* USER CODE END I2C2_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C2 error interrupt.
+  */
+void I2C2_ER_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C2_ER_IRQn 0 */
+
+  /* USER CODE END I2C2_ER_IRQn 0 */
+  HAL_I2C_ER_IRQHandler(&hi2c2);
+  /* USER CODE BEGIN I2C2_ER_IRQn 1 */
+	printf("I2C Transmit error!!");
+  /* USER CODE END I2C2_ER_IRQn 1 */
+}
+
+/**
   * @brief This function handles SPI1 global interrupt.
   */
 void SPI1_IRQHandler(void)
@@ -275,6 +349,20 @@ void SPI1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+
+  /* USER CODE END USART1_IRQn 0 */
+  HAL_UART_IRQHandler(&huart1);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART2 global interrupt.
   */
 void USART2_IRQHandler(void)
@@ -286,6 +374,53 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 1 */
 	
   /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt, DAC1_CH1 and DAC1_CH2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+	
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+	
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		
+	xSemaphoreGiveFromISR(xMotorSem, &xHigherPriorityTaskWoken);
+		
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM7 global interrupt.
+  */
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+
+  /* USER CODE END TIM7_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 stream0 global interrupt.
+  */
+void DMA2_Stream0_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_i2c2_rx);
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
 
 /**
@@ -318,19 +453,29 @@ void MDMA_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+// Transmit image
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart2)
 	{
-		//API will set it to pdTrue if there is a higher-priority Task ready
 		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 		
-		//Always reset the softwareTimer
 		xSemaphoreGiveFromISR(xWaitDMASem, &xHigherPriorityTaskWoken);
 		
-		//Switch context
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+}
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t size)
+{
+	if(huart == &huart1)
+	{
+		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		pUartRx_buf[size] = '\0';
+		xQueueSendFromISR(xRxQueue, pUartRx_buf, &xHigherPriorityTaskWoken);
+		
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart1, (u8*)pUartRx_buf, sizeof(pUartRx_buf));
+		__HAL_DMA_DISABLE_IT(huart1.hdmarx, DMA_IT_HT);
 	}
 }
 

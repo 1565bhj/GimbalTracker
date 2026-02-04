@@ -63,3 +63,11 @@ aitargettracker\stm32h7xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/inclu
 aitargettracker\stm32h7xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 aitargettracker\stm32h7xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
 aitargettracker\stm32h7xx_it.o: ../Drivers/Bsp/inc/sys.h
+aitargettracker\stm32h7xx_it.o: ../Drivers/Bsp/inc/AS5600.h
+aitargettracker\stm32h7xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
+aitargettracker\stm32h7xx_it.o: ../Drivers/Bsp/inc/pid.h
+aitargettracker\stm32h7xx_it.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+aitargettracker\stm32h7xx_it.o: ../Drivers/Bsp/inc/FOC.h
+aitargettracker\stm32h7xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
+aitargettracker\stm32h7xx_it.o: ../Drivers/Bsp/inc/LowPassFilter.h
+aitargettracker\stm32h7xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h

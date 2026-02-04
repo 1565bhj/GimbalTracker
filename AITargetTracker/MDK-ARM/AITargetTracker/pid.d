@@ -2,6 +2,7 @@ aitargettracker\pid.o: ..\Drivers\Bsp\src\pid.c
 aitargettracker\pid.o: ../Drivers/Bsp/inc/pid.h
 aitargettracker\pid.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 aitargettracker\pid.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\math.h
+aitargettracker\pid.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 aitargettracker\pid.o: ../Drivers/Bsp/inc/sys.h
 aitargettracker\pid.o: ../Core/Inc/main.h
 aitargettracker\pid.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h

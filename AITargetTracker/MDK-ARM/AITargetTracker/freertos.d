@@ -62,6 +62,7 @@ aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/s
 aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
 aitargettracker\freertos.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 aitargettracker\freertos.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\string.h
+aitargettracker\freertos.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/sys.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/SDRAM.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/dcmi_ov5640.h
@@ -70,8 +71,13 @@ aitargettracker\freertos.o: ../Core/Inc/usart.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/gimbal.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/pid.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/joystick.h
-aitargettracker\freertos.o: D:\software\keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/software_timer.h
 aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 aitargettracker\freertos.o: ../Drivers/Bsp/inc/transmit_image.h
+aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
+aitargettracker\freertos.o: ../Drivers/Bsp/inc/FOC.h
+aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
+aitargettracker\freertos.o: ../Drivers/Bsp/inc/AS5600.h
+aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
+aitargettracker\freertos.o: ../Drivers/Bsp/inc/LowPassFilter.h
 aitargettracker\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h

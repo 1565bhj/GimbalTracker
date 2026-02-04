@@ -64,6 +64,7 @@ aitargettracker\main.o: ../Core/Inc/adc.h
 aitargettracker\main.o: ../Core/Inc/dcmi.h
 aitargettracker\main.o: ../Core/Inc/dma.h
 aitargettracker\main.o: ../Core/Inc/dma2d.h
+aitargettracker\main.o: ../Core/Inc/i2c.h
 aitargettracker\main.o: ../Core/Inc/jpeg.h
 aitargettracker\main.o: ../Core/Inc/mdma.h
 aitargettracker\main.o: ../Core/Inc/spi.h

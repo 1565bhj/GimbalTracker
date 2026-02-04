@@ -13,13 +13,14 @@ extern TIM_HandleTypeDef	htim4;
 #define JOYDEADZONE 	150
 #define JOYCENTERVAL 	2048
 
+
 void Servo_Set_Angle(u8 angle, u8 CH)
 {
 	//0°--  0.5ms -- 50tick
 	//180°-- 2.5ms -- 250tick
 	u8 valid_angle = (angle > 180) ? 180 : angle;
 	
-	uint16_t tick = ((float)valid_angle / 180) * 200 + 50;
+	u16 tick = ((float)valid_angle / 180) * 200 + 50;
 	if(CH == 1)
 	{
 		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, tick);
@@ -39,9 +40,9 @@ void Gimbal_Init(PID_TypeDef* xPidx, PID_TypeDef* xPidy, Joystick_TypeDef* xJoy,
     // 初始化 PID
     // 参数需要根据实际调节: Kp, Ki, Kd, MaxStep(单次最大转角), PixelDeadZone(像素死区)
     // X轴通常需要响应快一点
-    PID_Init(xPidx, XKP, XKI, XKD, MAXSTEP, PIXELDEADZONE); 
+    PID_Init(xPidx, XKP, XKI, XKD, MAXSTEP, PIXELDEADZONE, 0); 
     // Y轴受重力影响，参数可能略有不同
-    PID_Init(xPidy, YKP, YKI, YKD, MAXSTEP, PIXELDEADZONE); 
+    PID_Init(xPidy, YKP, YKI, YKD, MAXSTEP, PIXELDEADZONE, 0); 
 
 		// 参数需要根据实际调节: CenterVal(中间值), MaxStep(单次最大步长), JoyDeadZone(舵机死区)
 		// 摇杆结构体的初始化
@@ -57,15 +58,15 @@ void Gimbal_Init(PID_TypeDef* xPidx, PID_TypeDef* xPidy, Joystick_TypeDef* xJoy,
     Servo_Set_Angle(xGim->current_y_angle, 2);
 }
 
-void Control_Loop(Gimbal_TypeDef* xGim, float* pfDelte) {
+void Control_Loop(Gimbal_TypeDef* xGim, ServoInc_TypeDef xServoInc) {
 	
     // 注意方向：摄像头的镜像关系决定是 加 还是 减
     // 如果人脸在画面左边(坐标小)，云台应该往左转还是往右转？
     // 假设：X坐标小意味着目标在左侧，需要减少角度向左看
-    xGim->current_x_angle += pfDelte[0]; // 或者 -= delta_x，根据实际安装方向调整
+    xGim->current_x_angle += xServoInc.fInc_x; // 或者 -= delta_x，根据实际安装方向调整
     
     // Y轴方向调整
-    xGim->current_y_angle += pfDelte[1]; // 或者 -= delta_y
+    xGim->current_y_angle += xServoInc.fInc_y; // 或者 -= delta_y
 
     /* ---------------- 物理限位保护 ---------------- */
     if (xGim->current_x_angle > xGim->servo_max_angle) xGim->current_x_angle = xGim->servo_max_angle;
@@ -80,4 +81,43 @@ void Control_Loop(Gimbal_TypeDef* xGim, float* pfDelte) {
 		
 }
 
+void Process_AIResult(PID_TypeDef* xPidx, PID_TypeDef* xPidy, float* pfRequire, u16* pTarget, ServoInc_TypeDef* pxServoInc)
+{
+	float err_x = (float)pTarget[0] - pfRequire[0];
+	float err_y = (float)pTarget[1] - pfRequire[1];
+	
+    /* ---------------- X 轴计算 (Pan) ---------------- */
+    pxServoInc->fInc_x = PID_Inc(xPidx, err_x);
+		/* ---------------- Y 轴计算 (Tilt) ---------------- */
+    pxServoInc->fInc_y = PID_Inc(xPidy, err_y);
+	
+}
 
+/**
+ * @brief 处理摇杆数据并计算舵机步长
+ */
+void Process_Joystick(Joystick_TypeDef *joy, u16* pJoy_Buf, ServoInc_TypeDef* pxServoInc) {
+    // 1. 处理 X 轴 (水平)
+    int offset_x = (int)pJoy_Buf[0] - joy->centerVal;
+    
+    if (abs(offset_x) <= joy->deadZone) {
+        pxServoInc->fInc_x = 0; // 处于死区内，静止
+    } else {
+        // 将偏移量归一化并映射到步长 (0 ~ fmaxStep)
+        // 映射公式: fmaxStep * (当前值 - 死区边界) / (最大值 - 死区边界)
+				float absInc_x = (float)(abs(offset_x) - joy->deadZone) / (joy->centerVal - joy->deadZone) * joy->fMaxStep;
+				pxServoInc->fInc_x = offset_x > 0 ? absInc_x : -absInc_x;
+       
+    }
+
+    // 2. 处理 Y 轴 (垂直) - 逻辑同上
+    int offset_y = (int)pJoy_Buf[1] - joy->centerVal;
+
+    if (abs(offset_y) <= joy->deadZone) {
+        pxServoInc->fInc_y = 0;
+    } else {
+        float absInc_y = (float)(abs(offset_y) - joy->deadZone) / (joy->centerVal - joy->deadZone) * joy->fMaxStep;
+				pxServoInc->fInc_y = offset_y > 0 ? absInc_y : -absInc_y;
+    }
+		
+}

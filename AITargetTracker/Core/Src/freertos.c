@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
   #include <stdio.h>
 	#include <string.h>
+	#include <stdlib.h>
 	#include "projdefs.h"
 	#include "sys.h"
 	#include "SDRAM.h"
@@ -37,6 +38,8 @@
 	#include "software_timer.h"
 	#include "joystick.h"
 	#include "transmit_image.h"
+	#include "FOC.h"
+	#include "AS5600.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,7 +68,14 @@ extern ADC_HandleTypeDef 	hadc1;
 extern DMA_HandleTypeDef 	hdma_adc1;
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef 	htim4;
+extern TIM_HandleTypeDef 	htim2;
 extern TimerHandle_t 			xDebounceTimer;
+extern TIM_HandleTypeDef  htim6;
+extern TIM_HandleTypeDef  htim7;
+
+extern  PID_TypeDef velPID;
+extern  AS5600_HandleTypedef as;
+extern  FOC_HandleTypeDef xFOC;
 
 static PID_TypeDef 			xPID_x;
 static PID_TypeDef 			xPID_y;
@@ -74,11 +84,16 @@ static Joystick_TypeDef xJoy;
 static u16 							pTarget[2];
 static u16 							pJoyBuf[2];
 static float 						pfRequire[2];
+static FlagStatus 			control_mode = RESET;
+static QueueHandle_t xServoQueue = NULL;
+//static SVPWM_HandleTypeDef foc;
 
 SemaphoreHandle_t xModeChangeSem = NULL;
 SemaphoreHandle_t xWaitDMASem = NULL;
+SemaphoreHandle_t xMotorSem = NULL;
+QueueHandle_t xRxQueue = NULL;
 
-FlagStatus control_mode = RESET;
+char pUartRx_buf[128];
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -90,8 +105,12 @@ void OV5640Task(void *);
 void Servotest(void *);
 void vModeChangeTask(void *argument);
 void test(void *argument);
+void ProccessTargetTask(void *argument);
+void ProccessRxTask(void *argument);
 void ControlTask(void *argument);
 
+
+HAL_StatusTypeDef SplitKeyVal(char* key, char* val, char* str);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -143,7 +162,13 @@ void MX_FREERTOS_Init(void) {
 	
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
+	HAL_TIM_Base_Start_IT(&htim6);
+	HAL_TIM_Base_Start_IT(&htim7);
 	
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1, (u8*)pUartRx_buf, sizeof(pUartRx_buf));
+	__HAL_DMA_DISABLE_IT(huart1.hdmarx, DMA_IT_HT);
+	
+	SVPWM_Init();
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -154,6 +179,7 @@ void MX_FREERTOS_Init(void) {
   /* add semaphores, ... */
 	xModeChangeSem = xSemaphoreCreateBinary();
 	xWaitDMASem = xSemaphoreCreateBinary();
+	xMotorSem = xSemaphoreCreateBinary();
 	
 	xSemaphoreGive(xModeChangeSem);
   /* USER CODE END RTOS_SEMAPHORES */
@@ -165,6 +191,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+	xServoQueue = xQueueCreate(1, sizeof(ServoInc_TypeDef));
+	xRxQueue = xQueueCreate(5, sizeof(pUartRx_buf));
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -175,11 +203,12 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 	
-  xTaskCreate(test, "test", 128, NULL, osPriorityAboveNormal, NULL);
+  xTaskCreate(test, "test", 256, NULL, osPriorityAboveNormal, NULL);
   //xTaskCreate(OV5640Task, "OV5640Task", 128, NULL, osPriorityAboveNormal, NULL);
-  //xTaskCreate(Servotest, "servotest", 128, NULL, osPriorityAboveNormal, NULL);
-  xTaskCreate(vModeChangeTask, "vModeChangeTask", 128, NULL, osPriorityAboveNormal, NULL);
-	xTaskCreate(ControlTask, "ControlTask", 128, NULL, osPriorityAboveNormal, NULL);
+  //xTaskCreate(vModeChangeTask, "vModeChangeTask", 128, NULL, osPriorityAboveNormal, NULL);
+	//xTaskCreate(ProccessTargetTask, "ProccessTargetTask", 128, NULL, osPriorityAboveNormal, NULL);
+	xTaskCreate(ProccessRxTask, "ProccessRxTask", 256, NULL, osPriorityAboveNormal, NULL);
+	//xTaskCreate(ControlTask, "ControlTask", 128, NULL, osPriorityAboveNormal, NULL);
 	
   /* USER CODE END RTOS_THREADS */
 
@@ -206,13 +235,20 @@ void StartDefaultTask(void const * argument)
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
+float velocity = 10;
+float angle = 0;
+extern FOC_HandleTypeDef xSPWMFOC;
 void test(void *argument)
 {
-//	u8* img_bug = (u8*)CAMERA_BUF_ADDR;
-//	UART_Send_Image(img_bug, 0);
+	SVPWM_Init();
+	float angle = 0;
 	while(1)
 	{
-		vTaskDelay(2000);
+		xSemaphoreTake(xMotorSem, portMAX_DELAY);
+		SVPWM_CalcForTargetVelocity(&xFOC, velocity);
+		//SVPWM_CalcForTargetAngle(&foc, angle);
+		//SPWM_CalcForTargetVelocity(&xSPWMFOC, velocity);
+		//SPWM_CalcForTargetAngle(&xSPWMFOC, angle);		
 	}
 }
 
@@ -248,27 +284,71 @@ void vModeChangeTask(void *argument)
 	}
 }
 
-void ControlTask(void *argument)
+void ProccessTargetTask(void *argument)
 {
-	float pfDelte[2];
+	ServoInc_TypeDef xServoInc;
 	while(1)
 	{
 		if(control_mode)
 		{
 			//Mannul
-			Process_Joystick(&xJoy, pJoyBuf, pfDelte);
+			Process_Joystick(&xJoy, pJoyBuf, &xServoInc);
 		}else
 		{
 			//Auto-----
-			Process_AIResult(&xPID_x, &xPID_y, pfRequire, pTarget, pfDelte);
-			
+			Process_AIResult(&xPID_x, &xPID_y, pfRequire, pTarget, &xServoInc);
 		}
-		vTaskDelay(200);
-		printf("deltex:%.2f\r\n deltey:%.2f", pfDelte[0], pfDelte[1]);
-		Control_Loop(&xGim, pfDelte);
+		vTaskDelay(pdMS_TO_TICKS(12));
+		xQueueOverwrite(xServoQueue, &xServoInc);
 		
 	}
 }
+
+void ProccessRxTask(void *argument)
+{
+	char pData[128];
+	char key[8];
+	char val[5];
+	float value;
+	while(1)
+	{
+		xQueueReceive(xRxQueue, pData, portMAX_DELAY);
+		
+		if(SplitKeyVal(key, val, pData) == HAL_ERROR) continue;
+		value = atof(val);
+		if(strcmp(key, "uq") == 0)
+		{
+			xFOC.Uq = value;
+		}else if(strcmp(key, "vel") == 0)
+		{
+			velocity = value;
+		}else if(strcmp(key, "vp") == 0)
+		{
+			velPID.Kp = value;
+		}else if(strcmp(key, "vi") == 0)
+		{
+			velPID.Ki = value;
+		}else if(strcmp(key, "vd") == 0)
+		{
+			velPID.Kd = value;
+		}else if(strcmp(key, "angle") == 0)
+		{
+			angle = value;
+		}
+		
+	}
+}
+
+void ControlTask(void *argument)
+{
+	ServoInc_TypeDef xServoInc;
+	while(1)
+	{
+		xQueueReceive(xServoQueue, &xServoInc, portMAX_DELAY);
+		Control_Loop(&xGim, xServoInc);
+	}
+}
+
 
 void OV5640Task(void *argument)
 {
@@ -288,29 +368,22 @@ void OV5640Task(void *argument)
 	}
 }
 
-void Servotest(void *argument)
+HAL_StatusTypeDef SplitKeyVal(char* key, char* val, char* str)
 {
-	u8 flag = 0;
-	while(1)
-	{
-		if(flag == 0)
-		{
-			flag = 1;
-			Servo_Set_Angle(0 ,2);
-		}else
-		{
-			
-			flag = 0;
-			Servo_Set_Angle(90 ,2);
-		} 
-		printf("flag:%d\r\n",flag);
-		vTaskDelay(pdMS_TO_TICKS(2000));
-	}
+	char *key_ptr = NULL,*val_ptr = NULL;
+	
+	key_ptr = strtok(str, "=");
+	if(key_ptr == NULL || strlen(key_ptr) == 0) return HAL_ERROR;
+	
+	val_ptr = strtok(NULL, "=");
+	if(val_ptr == NULL || strlen(val_ptr) == 0) return HAL_ERROR;
+	
+	if(strlen(key_ptr) > 5 || strlen(val_ptr) > 5) return HAL_ERROR;
+	
+	strcpy(key, key_ptr);
+	strcpy(val, val_ptr);
+	return HAL_OK;
 }
-
-
-
-
 
 
 /* USER CODE END Application */

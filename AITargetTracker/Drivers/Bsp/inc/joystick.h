@@ -12,7 +12,6 @@ typedef struct {
     float fMaxStep; // 最大步长（每次循环改变的角度）
 } Joystick_TypeDef;
 
-void Joystick_Init(Joystick_TypeDef* xJoy, int centerVal, float fMaxStep, int joyDeadZone);
-void Process_Joystick(Joystick_TypeDef *joy, u16* pADC_Buf, float* pfDelte);
+void Joystick_Init(Joystick_TypeDef *joy, int centerVal, float fMaxStep, int joyDeadZone);
 
 #endif
